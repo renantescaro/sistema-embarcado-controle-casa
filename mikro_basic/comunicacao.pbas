@@ -1,0 +1,65 @@
+program comunicacao
+dim recebe as byte
+dim texto  as string[6]
+dim leitura as integer
+dim temperatura as float
+
+main:
+TRISA  = %11111111
+TRISB  = %01111111
+TRISC  = %00000000
+INTCON = %00000000
+
+' portas analogicas = 1
+ANSEL  = %00000000
+ANSELH = %00000000
+PORTC  = 0
+
+Usart_Init(9600)
+
+ executa:
+  if Usart_Data_Ready() > 0 then
+    recebe=Usart_Read()
+    
+    ' envio de dados
+    if recebe=5 then
+       ' quarto
+       if PORTA.0=1 then
+          Usart_Write_Text("1")
+          PORTC.0=1
+       else
+          Usart_Write_Text("0")
+          PORTC.0=0
+       end if
+       
+        ' banheiro
+       if PORTA.3=1 then
+         Usart_Write_Text("1")
+         PORTC.1=1
+       else
+         Usart_Write_Text("0")
+         PORTC.1=0
+       end if
+       
+       ' sala
+       if PORTA.2=1 then
+         Usart_Write_Text("1")
+         PORTC.2=1
+       else
+         Usart_Write_Text("0")
+         PORTC.2=0
+       end if
+
+       Usart_Write_Text("0")
+       Usart_Write_Text("0")
+       
+       ' temperatura
+       leitura = Adc_Read(1)
+       temperatura = ( ( 80 * leitura ) / 1023 )
+       IntToStr(temperatura, texto)
+       Usart_Write_Text(texto)
+    end if
+  end if
+  
+  goto executa
+end.
